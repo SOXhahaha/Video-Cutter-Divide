@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+.vscode/
+.env
+
+build/
+dist/
+outputs/
+*.log
+
+node_modules/
+electron-app/dist/
+electron-app/node_modules/
+electron-app/*.traineddata

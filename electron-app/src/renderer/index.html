@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; media-src 'self' file: blob:;">
+  <title>Video Cutter Divide</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Title + Directory Bar -->
+  <header id="toolbar">
+    <div id="dir-row">
+      <label>源目录:</label>
+      <input type="text" id="source-dir" readonly placeholder="选择包含视频文件的源目录…">
+      <button id="browse-source">浏览</button>
+      <label>输出目录:</label>
+      <input type="text" id="output-dir" readonly placeholder="选择分类输出目录…">
+      <button id="browse-output">浏览</button>
+      <button id="scan-btn" class="primary">扫描</button>
+      <div class="spacer"></div>
+      <button id="settings-btn" title="设置">⚙</button>
+    </div>
+  </header>
+
+  <!-- Settings Modal -->
+  <div id="settings-overlay" class="modal-overlay" style="display:none;">
+    <div class="modal-dialog">
+      <h3>设置</h3>
+      <div class="settings-section">
+        <h4>OCR 参数</h4>
+        <label>采样间隔 (s) <input type="number" id="set-ocr-interval" value="0.2" min="0.05" max="2" step="0.05"></label>
+        <label>最小置信度 <input type="number" id="set-ocr-confidence" value="0.8" min="0.1" max="1" step="0.05"></label>
+        <label>最小文字长度 <input type="number" id="set-ocr-min-len" value="2" min="1" max="10" step="1"></label>
+      </div>
+      <div class="settings-section">
+        <h4>字幕合并</h4>
+        <label>相似度阈值 <input type="number" id="set-merge-similarity" value="0.5" min="0.1" max="1" step="0.05"></label>
+      </div>
+      <div class="modal-buttons">
+        <button id="settings-ok" class="primary">确定</button>
+        <button id="settings-cancel">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Three-column layout -->
+  <main id="columns">
+    <!-- Left: Video list -->
+    <section id="left-panel">
+      <div class="panel-header">
+        <h2>视频列表</h2>
+      </div>
+      <div id="video-list" class="tree-list"></div>
+      <div id="video-count">共 0 个视频</div>
+    </section>
+
+    <!-- Center: Preview + Timeline + Controls -->
+    <section id="center-panel">
+      <!-- Video player -->
+      <div id="preview-container">
+        <video id="video-player" preload="metadata"></video>
+        <canvas id="roi-overlay"></canvas>
+        <div id="preview-placeholder">选择视频后显示预览</div>
+        <!-- Transport overlay -->
+        <div id="transport-overlay">
+          <button id="play-btn" class="transport-btn" title="播放/暂停 (Space)">▶</button>
+        </div>
+      </div>
+
+      <!-- Timeline (waveform + slices — no separate seek slider) -->
+      <div id="timeline-container">
+        <canvas id="waveform-canvas"></canvas>
+        <div id="timeline-slices"></div>
+        <div id="playhead" class="playhead"></div>
+      </div>
+
+      <!-- Toolbar: editor actions -->
+      <div id="editor-toolbar">
+        <button id="split-btn" title="在播放头位置切割 (S)">✂ 切割</button>
+        <button id="delete-slice-btn" title="删除选中切片 (Del)">🗑 删除</button>
+        <button id="undo-btn" title="撤回 (Ctrl+Z)">↩ 撤回</button>
+        <button id="reset-btn" title="还原为完整切片">⟳ 还原</button>
+        <span id="time-label">00:00.00 / 00:00.00</span>
+        <div class="spacer"></div>
+        <label class="vol-label" title="播放音量调节，不影响导出">🔊</label>
+        <input type="range" id="volume-db" min="-20" max="20" step="1" value="0" title="播放音量(dB)">
+        <span id="volume-db-label">0 dB</span>
+      </div>
+
+      <!-- Slice list -->
+      <div id="slice-list-section">
+        <table id="slice-table">
+          <thead>
+            <tr><th>#</th><th>起始</th><th>结束</th><th>时长</th><th>状态</th></tr>
+          </thead>
+          <tbody id="slice-body"></tbody>
+        </table>
+      </div>
+
+      <!-- Info -->
+      <div id="info-label">未选择视频</div>
+    </section>
+
+    <!-- Right: Categories + Subtitle -->
+    <section id="right-panel">
+      <div class="panel-header"><h2>分类 / 字幕</h2></div>
+      <!-- Category add -->
+      <div id="cat-add-row">
+        <input type="text" id="new-cat-input" placeholder="新分类名称…">
+        <button id="add-cat-btn">添加</button>
+      </div>
+      <div id="cat-list" class="tree-list small"></div>
+      <button id="remove-cat-btn">删除选中分类</button>
+
+      <div class="separator">— 快速分类 —</div>
+      <div id="cat-buttons"></div>
+
+      <div class="separator">— 识别功能 —</div>
+      <div id="detect-row">
+        <button id="ocr-btn">字幕识别</button>
+      </div>
+      <div id="roi-row">
+        <button id="roi-mode-btn">框选 ROI</button>
+        <button id="roi-clear-btn">清除 ROI</button>
+      </div>
+      <div id="roi-label">ROI: 未设置</div>
+
+      <div class="separator">— 字幕列表（双击编辑）—</div>
+      <div id="subtitle-list" class="tree-list"></div>
+      <div id="subtitle-add-row">
+        <input type="text" id="add-subtitle-input" placeholder="输入字幕…">
+        <button id="add-subtitle-btn">添加</button>
+      </div>
+      <button id="delete-subtitle-btn">删除选中字幕</button>
+    </section>
+  </main>
+
+  <footer id="statusbar">
+    <span id="status-message">请选择源目录和输出目录，然后点击「扫描」。</span>
+  </footer>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

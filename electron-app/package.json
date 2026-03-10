@@ -1,0 +1,25 @@
+{
+  "name": "video-cutter-divide",
+  "version": "1.0.0",
+  "main": "dist/main/main.js",
+  "scripts": {
+    "copy-renderer": "node -e \"const fs=require('fs'),p=require('path');const d=p.join('dist','renderer');fs.mkdirSync(d,{recursive:true});['index.html','styles.css','renderer.js'].forEach(f=>fs.copyFileSync(p.join('src','renderer',f),p.join(d,f)))\"",
+    "build": "tsc && npm run copy-renderer",
+    "start": "npm run build && electron .",
+    "dev": "npm run build && electron . --dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "toml": "^3.0.0",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.4.0",
+    "@types/uuid": "^10.0.0",
+    "electron": "^40.8.0",
+    "typescript": "^5.9.3"
+  }
+}
