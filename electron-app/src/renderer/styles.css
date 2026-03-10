@@ -250,6 +250,11 @@ button.active { background: var(--primary); color: #fff; border-color: var(--pri
 .subtitle-item.drag-over { border-top: 2px solid var(--primary); }
 .subtitle-item .subtitle-check { flex-shrink: 0; margin: 0; cursor: pointer; accent-color: var(--primary); }
 .subtitle-item .text { flex: 1; }
+.subtitle-item .subtitle-edit-input {
+  flex: 1; font-size: 12px; padding: 1px 4px; border: 1px solid var(--primary);
+  background: var(--bg-lighter, #2a2d2e); color: var(--text-bright, #fff);
+  outline: none; border-radius: 2px; font-family: inherit;
+}
 .subtitle-item .edited { width: 18px; flex-shrink: 0; text-align: center; }
 #delete-subtitle-btn { margin-top: 4px; width: calc(100% - 24px); }
 #subtitle-add-row { display: flex; gap: 6px; margin-top: 4px; }

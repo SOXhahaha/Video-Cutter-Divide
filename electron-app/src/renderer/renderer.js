@@ -941,14 +941,35 @@ function refreshSubtitleList() {
       subtitleListEl.querySelectorAll('.subtitle-item').forEach(e => e.classList.remove('selected'));
       el.classList.add('selected');
     });
-    el.addEventListener('dblclick', async () => {
-      const newText = prompt('编辑字幕:', cand.text);
-      if (newText !== null && newText !== cand.text) {
-        cand.text = newText;
-        cand.edited = true;
-        await window.api.saveIndex(index);
+    el.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      // Already editing?
+      if (el.querySelector('.subtitle-edit-input')) return;
+      const origText = cand.text;
+      textSpan.style.display = 'none';
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'subtitle-edit-input';
+      input.value = origText;
+      el.insertBefore(input, textSpan.nextSibling);
+      input.focus();
+      input.select();
+      const commit = async () => {
+        const newText = input.value.trim();
+        if (newText && newText !== origText) {
+          cand.text = newText;
+          cand.edited = true;
+          await window.api.saveIndex(index);
+        }
         refreshSubtitleList();
-      }
+      };
+      input.addEventListener('keydown', (ke) => {
+        if (ke.key === 'Enter') { ke.preventDefault(); commit(); }
+        if (ke.key === 'Escape') { refreshSubtitleList(); }
+        ke.stopPropagation();
+      });
+      input.addEventListener('blur', () => commit());
+      input.addEventListener('click', (ce) => ce.stopPropagation());
     });
     el.addEventListener('dragstart', (e) => {
       el.classList.add('dragging');
